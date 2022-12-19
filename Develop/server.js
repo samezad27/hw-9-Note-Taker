@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
-const notesData = require("./db/db.json");
+const fs = require("fs");
+const uuid = require("uuid");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -19,14 +20,54 @@ app.get("/notes", (req, res) =>
   res.sendFile(path.join(__dirname, "public/notes.html"))
 );
 
-//API get
+//API get (returns a list of Notes)
 
-app.get("/api/notes", (req, res) => res.json(notesData));
+app.get("/api/notes", (req, res) => {
+  fs.readFile("./db/db.json", (err, result) => {
+    const notesData = JSON.parse(result.toString());
+    return res.json(notesData);
+  });
+});
 
-//API post
+//API post (creates a Note)
+
+app.post("/api/notes", (req, res) => {
+  const newNote = {
+    id: uuid.v4(),
+    title: req.body.title,
+    text: req.body.text,
+  };
+  fs.readFile("./db/db.json", (err, result) => {
+    const data = JSON.parse(result.toString());
+    data.push(newNote);
+    fs.writeFile("./db/db.json", JSON.stringify(data), (err, fin) => {
+      return res.json(newNote);
+    });
+  });
+});
+//API put (updates a Note)
+
+app.put("/api/notes/:id", (req, res) => {
+  const updatedNote = req.body;
+  fs.readFile("./db/db.json", (err, result) => {
+    const notes = JSON.parse(result.toString()); // [{"id:"", "title":"", "text": ""}, ...]
+    const id = req.params.id; // "s4gds-sds4gs-23r"
+    const foundNote = notes.find((note) => id === notes.id);
+
+    fs.writeFile("./db/db.json", JSON.stringify(data), (err, fin) => {
+      return res.json(newNote);
+    });
+  });
+});
 
 //API get specific notes
-
+app.get("/api/notes/:id", (req, res) => {
+  const id = req.params.id;
+  fs.readFile("./db/db.json", (err, result) => {
+    const notesData = JSON.parse(result.toString());
+    return res.json(notesData);
+  });
+});
 //spin up server
 app.listen(PORT, () =>
   console.log(`Your app is running at http://localhost:${PORT} `)
