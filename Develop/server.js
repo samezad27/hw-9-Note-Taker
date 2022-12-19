@@ -20,6 +20,16 @@ app.get("/notes", (req, res) =>
   res.sendFile(path.join(__dirname, "public/notes.html"))
 );
 
+//API get specific notes -- need to fix this
+app.get("/api/notes/:id", (req, res) => {
+  const id = req.params.id;
+  fs.readFile("./db/db.json", (err, result) => {
+    const notes = JSON.parse(result.toString());
+    const foundNote = notes.find((note) => id === note.id);
+    return res.json(foundNote);
+  });
+});
+
 //API get (returns a list of Notes)
 
 app.get("/api/notes", (req, res) => {
@@ -45,6 +55,7 @@ app.post("/api/notes", (req, res) => {
     });
   });
 });
+
 //API put (updates a Note)
 
 app.put("/api/notes/:id", (req, res) => {
@@ -52,22 +63,14 @@ app.put("/api/notes/:id", (req, res) => {
   fs.readFile("./db/db.json", (err, result) => {
     const notes = JSON.parse(result.toString()); // [{"id:"", "title":"", "text": ""}, ...]
     const id = req.params.id; // "s4gds-sds4gs-23r"
-    const foundNote = notes.find((note) => id === notes.id);
-
-    fs.writeFile("./db/db.json", JSON.stringify(data), (err, fin) => {
-      return res.json(newNote);
+    const foundNote = notes.find((note) => id === note.id);
+    Object.assign(foundNote, updatedNote);
+    fs.writeFile("./db/db.json", JSON.stringify(notes), (err, fin) => {
+      return res.json(foundNote);
     });
   });
 });
 
-//API get specific notes
-app.get("/api/notes/:id", (req, res) => {
-  const id = req.params.id;
-  fs.readFile("./db/db.json", (err, result) => {
-    const notesData = JSON.parse(result.toString());
-    return res.json(notesData);
-  });
-});
 //spin up server
 app.listen(PORT, () =>
   console.log(`Your app is running at http://localhost:${PORT} `)
