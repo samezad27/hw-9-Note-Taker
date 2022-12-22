@@ -62,11 +62,27 @@ app.put("/api/notes/:id", (req, res) => {
   const updatedNote = req.body;
   fs.readFile("./db/db.json", (err, result) => {
     const notes = JSON.parse(result.toString()); // [{"id:"", "title":"", "text": ""}, ...]
+    console.log(notes);
     const id = req.params.id; // "s4gds-sds4gs-23r"
     const foundNote = notes.find((note) => id === note.id);
     Object.assign(foundNote, updatedNote);
     fs.writeFile("./db/db.json", JSON.stringify(notes), (err, fin) => {
       return res.json(foundNote);
+    });
+  });
+});
+
+//api delete (deletes notes) this works but i need to figure out how to auto refresh data after a delete,
+
+app.delete("/api/notes/:id", (req, res) => {
+  const id = req.params.id;
+  fs.readFile("./db/db.json", (err, result) => {
+    const notes = JSON.parse(result.toString());
+    const foundNote = notes.find((note) => id === note.id);
+    console.log(notes);
+    const updatedArray = JSON.stringify(notes.filter((note) => note.id != id));
+    fs.writeFile("./db/db.json", updatedArray, (err, fin) => {
+      return updatedArray;
     });
   });
 });
